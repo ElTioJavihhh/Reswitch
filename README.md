@@ -1,6 +1,6 @@
 # Reswitch
 
-![Reswitch Logo](https://github.com/ElTioJavihhh/Reswitch/blob/main/reswitch_icon.ico)
+![Reswitch Logo](https://github.com/ElTioJavihhh/Reswitch/blob/main/src/reswitch_icon.ico)
 
 **Una utilidad para Windows que cambia automáticamente la resolución de tu pantalla al abrir tus juegos favoritos, eliminando los molestos pantallazos negros al tabular.**
 
