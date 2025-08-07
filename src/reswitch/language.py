@@ -1,5 +1,5 @@
-# --- Gestor de Idioma ---
-# (Este es tu código original, que es bastante bueno. Lo movemos a su propio módulo)
+# En: src/reswitch/language.py
+
 translations = {
     "en": {
         "nav_home": "Home", "nav_profiles": "Profiles", "nav_settings": "Settings", "nav_support": "❤️ Support",
@@ -13,8 +13,9 @@ translations = {
         "status_res_changed": "Resolution changed to {res} on {monitor}", "status_admin_needed": "Error: Administrator permissions needed",
         "status_res_unsupported": "Error: Resolution {res} not supported", "status_settings_saved": "Settings saved",
         "status_hotkey_error": "Error setting hotkeys: {e}", "status_startup_error": "Error modifying startup: {e}",
-        "profile_editor_title": "Game Profile Editor", "executable_path_label": "Executable Path (.exe):",
-        "game_resolution_label": "Resolution for this game:", "save_profile_button": "Save Profile", "select_executable_title": "Select Executable",
+        "profile_editor_title_new": "New Game Profile", "profile_editor_title_edit": "Edit Game Profile", # CORREGIDO
+        "executable_path_label": "Executable Path (.exe):", "game_resolution_label": "Resolution for this game:",
+        "save_profile_button": "Save Profile", "select_executable_title": "Select Executable",
         "delete_button": "Delete", "edit_button": "Edit", "no_profiles_text": "No profiles yet!", "no_profiles_subtext": "Add a profile or scan for games to get started.",
         "list_header_game": "GAME", "list_header_resolution": "RESOLUTION",
         "appearance_label": "Appearance", "appearance_mode_label": "Theme", "monitor_label": "Target Monitor",
@@ -38,8 +39,9 @@ translations = {
         "status_res_changed": "Resolución cambiada a {res} en {monitor}", "status_admin_needed": "Error: Se necesitan permisos de administrador",
         "status_res_unsupported": "Error: Resolución {res} no soportada", "status_settings_saved": "Ajustes guardados",
         "status_hotkey_error": "Error al configurar atajos: {e}", "status_startup_error": "Error al modificar inicio: {e}",
-        "profile_editor_title": "Editor de Perfiles de Juego", "executable_path_label": "Ruta del ejecutable (.exe):",
-        "game_resolution_label": "Resolución para este juego:", "save_profile_button": "Guardar Perfil", "select_executable_title": "Selecciona el ejecutable",
+        "profile_editor_title_new": "Nuevo Perfil de Juego", "profile_editor_title_edit": "Editar Perfil de Juego", # CORREGIDO
+        "executable_path_label": "Ruta del ejecutable (.exe):", "game_resolution_label": "Resolución para este juego:",
+        "save_profile_button": "Guardar Perfil", "select_executable_title": "Selecciona el ejecutable",
         "delete_button": "Eliminar", "edit_button": "Editar", "no_profiles_text": "¡Aún no hay perfiles!", "no_profiles_subtext": "Añade un perfil o busca juegos para empezar.",
         "list_header_game": "JUEGO", "list_header_resolution": "RESOLUCIÓN",
         "appearance_label": "Apariencia", "appearance_mode_label": "Tema", "monitor_label": "Monitor de Destino",
@@ -51,18 +53,13 @@ translations = {
         "scanner_no_new_games": "No se encontraron juegos nuevos o ya están todos en tus perfiles.",
         "tray_notice_title": "Reswitch! se está ejecutando", "tray_notice_text": "Reswitch! continuará ejecutándose en la bandeja del sistema. Puedes abrirlo de nuevo desde allí.", "tray_notice_button": "Entendido"
     },
-    "zh": { # Omitido por brevedad
-    }
+    "zh": {}
 }
 
 class LanguageManager:
     def __init__(self, language: str = "en"):
         self.language = language
-
     def get(self, key: str, **kwargs) -> str:
-        """Obtiene una cadena de traducción para la clave dada."""
         return translations.get(self.language, translations["en"]).get(key, key).format(**kwargs)
-
     def set_language(self, language: str):
-        """Establece el idioma actual."""
         self.language = language

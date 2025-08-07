@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reswitch"
+version = "1.0.0"
+authors = [
+  { name="ElTioJavihhh" },
+]
+description = "Una utilidad para cambiar rápidamente la resolución de pantalla para juegos."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT License" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "customtkinter",
+    "Pillow",
+    "psutil",
+    "keyboard",
+    "pystray",
+    "pywin32; sys_platform == 'win32'"
+]
+
+[project.scripts]
+reswitch = "reswitch.main:main"
+
+[tool.setuptools]
+# Esta configuración ahora encontrará la carpeta 'reswitch' renombrada
+package-dir = {"" = "src"}
+packages = ["reswitch"]
+
+[tool.black]
+line-length = 88
+target-version = ["py38"]
+
+[tool.ruff]
+line-length = 88
+select = []
+ignore = ["E501"]

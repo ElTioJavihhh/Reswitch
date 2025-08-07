@@ -7,7 +7,7 @@ block_cipher = None
 
 # --- Recopilación de archivos de datos ---
 # Copia el icono a la raíz del bundle, donde la función resource_path lo buscará.
-datas = [('src/assets/reswitch_icon.ico', '.')] # <--- RUTA CORREGIDA
+datas = [('src/assets', 'assets')]
 
 a = Analysis(
     ['run.py'],
