@@ -16,9 +16,10 @@ a = Analysis(
     hiddenimports=[
         'pystray._win32',
         'win32timezone', # A menudo necesario para que pywin32 funcione correctamente
-        'darkdetect'     # A menudo necesario para que customtkinter detecte el tema del sistema
+        'darkdetect',     # A menudo necesario para que customtkinter detecte el tema del sistema
+        'winshell'
     ],
-    hookspath=[],    # <--- CORREGIDO
+    hookspath=['hooks'],    # <--- CORREGIDO
     hooksconfig={},
     runtime_hooks=[],# <--- CORREGIDO
     excludes=[],     # <--- CORREGIDO
