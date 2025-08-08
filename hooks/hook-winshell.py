@@ -1,5 +1,4 @@
-from PyInstaller.utils.hooks import collect_submodules
+# hooks/hook-winshell.py
+from PyInstaller.utils.hooks import copy_metadata
 
-# The winshell module implicitly imports from pywin32, so we need to make sure
-# PyInstaller finds all the necessary hidden modules for both.
-hiddenimports = collect_submodules('winshell') + collect_submodules('pywin32')
+datas = copy_metadata('winshell')

@@ -1,4 +1,4 @@
-# En: run.py (en la raíz del proyecto)
+# run.py
 
 import sys
 import os
