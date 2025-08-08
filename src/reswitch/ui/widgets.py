@@ -58,7 +58,7 @@ class ProfileEditor(ctk.CTkToplevel):
             icon_path = controller.app_icon
             logger.debug(f"ProfileEditor: Attempting to set icon with path: '{icon_path}'")
             if icon_path and os.path.exists(icon_path):
-                self.iconbitmap(icon_path)
+                self.wm_iconbitmap(icon_path)
                 logger.debug("ProfileEditor: Icon set successfully.")
             else:
                 logger.warning(f"ProfileEditor: Icon path '{icon_path}' does not exist or is None.")
@@ -107,7 +107,7 @@ class GameScannerWindow(ctk.CTkToplevel):
             icon_path = controller.app_icon
             logger.debug(f"GameScannerWindow: Attempting to set icon with path: '{icon_path}'")
             if icon_path and os.path.exists(icon_path):
-                self.iconbitmap(icon_path)
+                self.wm_iconbitmap(icon_path)
                 logger.debug("GameScannerWindow: Icon set successfully.")
             else:
                 logger.warning(f"GameScannerWindow: Icon path '{icon_path}' does not exist or is None.")
@@ -144,7 +144,7 @@ class HotkeyCaptureWindow(ctk.CTkToplevel):
             icon_path = controller.app_icon
             logger.debug(f"HotkeyCaptureWindow: Attempting to set icon with path: '{icon_path}'")
             if icon_path and os.path.exists(icon_path):
-                self.iconbitmap(icon_path)
+                self.wm_iconbitmap(icon_path)
                 logger.debug("HotkeyCaptureWindow: Icon set successfully.")
             else:
                 logger.warning(f"HotkeyCaptureWindow: Icon path '{icon_path}' does not exist or is None.")
@@ -174,7 +174,7 @@ class TrayNotificationDialog(ctk.CTkToplevel):
             icon_path = controller.app_icon
             logger.debug(f"TrayNotificationDialog: Attempting to set icon with path: '{icon_path}'")
             if icon_path and os.path.exists(icon_path):
-                self.iconbitmap(icon_path)
+                self.wm_iconbitmap(icon_path)
                 logger.debug("TrayNotificationDialog: Icon set successfully.")
             else:
                 logger.warning(f"TrayNotificationDialog: Icon path '{icon_path}' does not exist or is None.")

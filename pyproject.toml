@@ -22,8 +22,7 @@ dependencies = [
     "psutil",
     "keyboard",
     "pystray",
-    "pywin32; sys_platform == 'win32'",
-    "winshell"
+    "pywin32; sys_platform == 'win32'"
 ]
 
 [project.scripts]

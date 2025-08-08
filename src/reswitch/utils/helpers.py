@@ -5,9 +5,11 @@ import ctypes
 from typing import Tuple
 from PIL import Image, ImageDraw, ImageFont
 import customtkinter as ctk
-import winshell
+import win32gui
+import win32ui
+import win32con
+import win32api
 import logging
-from io import BytesIO
 
 logger = logging.getLogger(__name__)
 
@@ -48,17 +50,57 @@ def get_icon_from_exe(exe_path: str, size: Tuple[int, int] = (32, 32)) -> ctk.CT
     if not exe_path or not os.path.exists(exe_path):
         logger.warning(f"Exe path does not exist or is empty: '{exe_path}'. Returning placeholder.")
         return create_placeholder_icon(size=size)
+
     try:
-        ico_data = winshell.get_icon(exe_path, winshell.IconSize.large)
+        # Note: ExtractIconEx returns a list of handles
+        large_icons, small_icons = win32gui.ExtractIconEx(exe_path, 0, 1)
+
+        # We prefer large icons
+        target_icons = large_icons if large_icons else small_icons
         
-        if not ico_data:
-            logger.warning(f"winshell.get_icon returned no data for '{exe_path}'. Returning placeholder.")
+        if not target_icons:
+            logger.warning(f"No icons found in '{exe_path}'.")
             return create_placeholder_icon(size=size)
 
-        logger.debug(f"Successfully got icon data for '{exe_path}'. Creating CTkImage.")
-        with BytesIO(ico_data) as bio:
-            img = Image.open(bio)
-            return ctk.CTkImage(light_image=img, dark_image=img, size=size)
+        h_icon = target_icons[0]
+
+        # Get icon info
+        icon_info = win32gui.GetIconInfo(h_icon)
+
+        # Get the icon's bitmap handle
+        h_bitmap = icon_info[4]
+
+        # Create a device context
+        hdc = win32ui.CreateDCFromHandle(win32gui.GetDC(0))
+        h_mem_dc = hdc.CreateCompatibleDC()
+        h_mem_dc.SelectObject(h_bitmap)
+
+        # Get bitmap dimensions
+        bmp_info = win32gui.GetBitmapBits(h_bitmap, False)
+        bmp_header = BITMAPINFOHEADER()
+        ctypes.memmove(ctypes.pointer(bmp_header), bmp_info, ctypes.sizeof(bmp_header))
+
+        # Create a PIL image from the bitmap
+        bmp_str = h_mem_dc.GetBitmapBits(True)
+        img = Image.frombuffer(
+            'RGBA',
+            (bmp_header.biWidth, bmp_header.biHeight),
+            bmp_str, 'raw', 'BGRA', 0, 1
+        )
+
+        # Clean up handles
+        win32gui.DestroyIcon(h_icon)
+        for icon in large_icons:
+            if icon != h_icon: win32gui.DestroyIcon(icon)
+        for icon in small_icons:
+            if icon != h_icon: win32gui.DestroyIcon(icon)
+        win32gui.DeleteObject(icon_info[3]) # hbmMask
+        win32gui.DeleteObject(icon_info[4]) # hbmColor
+        hdc.DeleteDC()
+        h_mem_dc.DeleteDC()
+
+        logger.debug(f"Successfully extracted icon from '{exe_path}'.")
+        return ctk.CTkImage(light_image=img, dark_image=img, size=size)
 
     except Exception as e:
         logger.error(f"Error extracting icon from '{exe_path}': {e}", exc_info=True)
@@ -75,3 +117,18 @@ def create_placeholder_icon(size: Tuple[int, int] = (32, 32)) -> ctk.CTkImage:
         font = ImageFont.load_default()
     draw.text((size[0]/2, size[1]/2), "?", fill="#ffffff", anchor="ms", font=font)
     return ctk.CTkImage(light_image=image, dark_image=image, size=size)
+
+class BITMAPINFOHEADER(ctypes.Structure):
+    _fields_ = [
+        ('biSize', ctypes.wintypes.DWORD),
+        ('biWidth', ctypes.wintypes.LONG),
+        ('biHeight', ctypes.wintypes.LONG),
+        ('biPlanes', ctypes.wintypes.WORD),
+        ('biBitCount', ctypes.wintypes.WORD),
+        ('biCompression', ctypes.wintypes.DWORD),
+        ('biSizeImage', ctypes.wintypes.DWORD),
+        ('biXPelsPerMeter', ctypes.wintypes.LONG),
+        ('biYPelsPerMeter', ctypes.wintypes.LONG),
+        ('biClrUsed', ctypes.wintypes.DWORD),
+        ('biClrImportant', ctypes.wintypes.DWORD)
+    ]
