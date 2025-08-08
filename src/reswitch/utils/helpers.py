@@ -5,11 +5,9 @@ import ctypes
 from typing import Tuple
 from PIL import Image, ImageDraw, ImageFont
 import customtkinter as ctk
-import win32api
-import win32gui
-import win32con
-from win32com.shell import shell, shellcon
+import winshell
 import logging
+from io import BytesIO
 
 def resource_path(relative_path: str) -> str:
     """
@@ -43,30 +41,17 @@ def get_icon_from_exe(exe_path: str, size: Tuple[int, int] = (32, 32)) -> ctk.CT
     if not exe_path or not os.path.exists(exe_path):
         return create_placeholder_icon(size=size)
     try:
-        flags = shellcon.SHGFI_ICON | shellcon.SHGFI_LARGEICON
-        _ , info = shell.SHGetFileInfo(exe_path, 0, flags)
-        hIcon = info[0]
-        if not hIcon: return create_placeholder_icon(size=size)
+        ico_data = winshell.get_icon(exe_path, winshell.IconSize.large)
+        
+        if not ico_data:
+            return create_placeholder_icon(size=size)
 
-        icon_info = win32gui.GetIconInfo(hIcon)
-        hbmColor = icon_info[4]
-        bmp = win32gui.GetObject(hbmColor)
-        
-        bmp_info_header = BITMAPINFOHEADER()
-        bmp_info_header.biSize = ctypes.sizeof(BITMAPINFOHEADER)
-        hdc = win32gui.GetDC(0)
-        win32gui.GetDIBits(hdc, hbmColor, 0, 0, None, ctypes.byref(bmp_info_header), win32con.DIB_RGB_COLORS)
-        win32gui.ReleaseDC(None, hdc)
-        
-        bits = win32gui.GetBitmapBits(hbmColor, True)
-        img = Image.frombuffer("RGBA", (bmp.bmWidth, bmp.bmHeight), bits, "raw", "BGRA", 0, 1)
+        with BytesIO(ico_data) as bio:
+            img = Image.open(bio)
+            return ctk.CTkImage(light_image=img, dark_image=img, size=size)
 
-        win32gui.DestroyIcon(hIcon)
-        win32gui.DeleteObject(icon_info[3])
-        win32gui.DeleteObject(icon_info[4])
-        
-        return ctk.CTkImage(light_image=img, dark_image=img, size=size)
-    except Exception:
+    except Exception as e:
+        logging.error(f"Error extracting icon from {exe_path}: {e}")
         return create_placeholder_icon(size=size)
 
 def create_placeholder_icon(size: Tuple[int, int] = (32, 32)) -> ctk.CTkImage:
@@ -80,8 +65,3 @@ def create_placeholder_icon(size: Tuple[int, int] = (32, 32)) -> ctk.CTkImage:
         font = ImageFont.load_default()
     draw.text((size[0]/2, size[1]/2), "?", fill="#ffffff", anchor="ms", font=font)
     return ctk.CTkImage(light_image=image, dark_image=image, size=size)
-
-class BITMAPINFOHEADER(ctypes.Structure):
-    _fields_ = [('biSize', ctypes.wintypes.DWORD), ('biWidth', ctypes.wintypes.LONG), ('biHeight', ctypes.wintypes.LONG), ('biPlanes', ctypes.wintypes.WORD), ('biBitCount', ctypes.wintypes.WORD), ('biCompression', ctypes.wintypes.DWORD), ('biSizeImage', ctypes.wintypes.DWORD), ('biXPelsPerMeter', ctypes.wintypes.LONG), ('biYPelsPerMeter', ctypes.wintypes.LONG), ('biClrUsed', ctypes.wintypes.DWORD), ('biClrImportant', ctypes.wintypes.DWORD)]
-class BITMAPINFO(ctypes.Structure):
-    _fields_ = [('bmiHeader', BITMAPINFOHEADER), ('bmiColors', ctypes.wintypes.DWORD * 1)]

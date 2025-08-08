@@ -53,7 +53,32 @@ translations = {
         "scanner_no_new_games": "No se encontraron juegos nuevos o ya están todos en tus perfiles.",
         "tray_notice_title": "Reswitch! se está ejecutando", "tray_notice_text": "Reswitch! continuará ejecutándose en la bandeja del sistema. Puedes abrirlo de nuevo desde allí.", "tray_notice_button": "Entendido"
     },
-    "zh": {}
+    "zh": {
+        "nav_home": "主页", "nav_profiles": "配置文件", "nav_settings": "设置", "nav_support": "❤️ 支持",
+        "home_title": "游戏配置文件管理器", "home_subtitle": "管理您的配置文件和设置，以获得最佳游戏体验。",
+        "quick_switch_title": "快速切换", "desktop_res_label": "桌面分辨率", "game_res_label": "游戏分辨率",
+        "switch_button": "切换分辨率", "profiles_title": "游戏配置文件",
+        "add_profile_button": "添加新配置文件", "fullscreen_warning": "为获得最佳效果，请在游戏中使用“无边框”或“全屏窗口”模式，以避免出现黑屏。",
+        "settings_title": "常规设置", "startup_options_label": "启动选项", "start_with_windows": "随 Windows 启动",
+        "hotkeys_label": "键盘快捷键", "desktop_hotkey": "桌面模式", "game_hotkey": "游戏模式",
+        "language_label": "语言", "save_settings_button": "保存更改", "status_ready": "准备就绪",
+        "status_res_changed": "分辨率已在 {monitor} 上更改为 {res}", "status_admin_needed": "错误：需要管理员权限",
+        "status_res_unsupported": "错误：不支持分辨率 {res}", "status_settings_saved": "设置已保存",
+        "status_hotkey_error": "设置热键时出错：{e}", "status_startup_error": "修改启动项时出错：{e}",
+        "profile_editor_title_new": "新的游戏配置文件", "profile_editor_title_edit": "编辑游戏配置文件",
+        "executable_path_label": "可执行文件路径 (.exe):", "game_resolution_label": "此游戏的分辨率:",
+        "save_profile_button": "保存配置文件", "select_executable_title": "选择可执行文件",
+        "delete_button": "删除", "edit_button": "编辑", "no_profiles_text": "尚无配置文件！", "no_profiles_subtext": "添加配置文件或扫描游戏以开始。",
+        "list_header_game": "游戏", "list_header_resolution": "分辨率",
+        "appearance_label": "外观", "appearance_mode_label": "主题", "monitor_label": "目标显示器",
+        "theme_light": "浅色", "theme_dark": "深色", "theme_system": "系统",
+        "monitor_profile_label": "此游戏的显示器:", "hotkey_capture_title": "设置热键", "hotkey_capture_text": "按所需的组合键...",
+        "tray_show": "显示 Reswitch!", "tray_exit": "退出", "tray_desktop_mode": "切换到桌面模式", "tray_game_mode": "切换到游戏模式",
+        "scan_games_button": "扫描游戏", "game_scanner_title": "游戏扫描器", "scanner_status_scanning": "正在扫描游戏，请稍候...",
+        "scanner_status_found": "找到 {count} 个新游戏。请选择要添加的游戏:", "scanner_add_selected_button": "添加选定的配置文件",
+        "scanner_no_new_games": "未找到新游戏或所有游戏均已在您的配置文件中。",
+        "tray_notice_title": "Reswitch! 正在运行", "tray_notice_text": "Reswitch! 将继续在系统托盘中运行。您可以从那里再次打开它。", "tray_notice_button": "知道了"
+    }
 }
 
 class LanguageManager:

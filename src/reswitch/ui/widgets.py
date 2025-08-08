@@ -51,9 +51,9 @@ class ProfileEditor(ctk.CTkToplevel):
         self.geometry("500x350")
         
         # --- CORRECCIÓN DEFINITIVA ---
-        if controller.app_icon:
-            self.iconphoto(True, controller.app_icon)
-            
+        if controller.app_icon and os.path.exists(controller.app_icon):
+            self.iconbitmap(controller.app_icon)
+
         self.transient(master)
         self.configure(fg_color=self.theme['bg'])
         self.protocol("WM_DELETE_WINDOW", self.destroy)
@@ -93,7 +93,7 @@ class GameScannerWindow(ctk.CTkToplevel):
         self.controller, self.lang, self.theme, self.checkboxes = controller, controller.lang, controller.theme, []
         self.title(self.lang.get("game_scanner_title"))
         self.geometry("600x500")
-        if controller.app_icon: self.iconphoto(True, controller.app_icon) # <-- CORRECCIÓN
+        if controller.app_icon and os.path.exists(controller.app_icon): self.iconbitmap(controller.app_icon)
         self.transient(master)
         self.configure(fg_color=self.theme['bg'])
         self.status_label = ctk.CTkLabel(self, text=self.lang.get("scanner_status_scanning"), font=self.controller.font_main, text_color=self.theme['text']); self.status_label.pack(pady=20)
@@ -121,7 +121,7 @@ class GameScannerWindow(ctk.CTkToplevel):
 class HotkeyCaptureWindow(ctk.CTkToplevel):
     def __init__(self, master: Any, controller: Any, button_to_update: ctk.CTkButton):
         super().__init__(master)
-        if controller.app_icon: self.iconphoto(True, controller.app_icon) # <-- CORRECCIÓN
+        if controller.app_icon and os.path.exists(controller.app_icon): self.iconbitmap(controller.app_icon)
         self.controller, self.lang, self.theme, self.button_to_update, self.keys_pressed = controller, controller.lang, controller.theme, button_to_update, []
         self.title(self.lang.get("hotkey_capture_title")); self.geometry("300x100"); self.transient(master); self.configure(fg_color=self.theme['bg'])
         self.label = ctk.CTkLabel(self, text=self.lang.get("hotkey_capture_text"), font=self.controller.font_main, text_color=self.theme['text']); self.label.pack(expand=True)
@@ -140,7 +140,7 @@ class HotkeyCaptureWindow(ctk.CTkToplevel):
 class TrayNotificationDialog(ctk.CTkToplevel):
     def __init__(self, master: Any, controller: Any, on_close_callback: Callable):
         super().__init__(master)
-        if controller.app_icon: self.iconphoto(True, controller.app_icon) # <-- CORRECCIÓN
+        if controller.app_icon and os.path.exists(controller.app_icon): self.iconbitmap(controller.app_icon)
         self.controller, self.lang, self.theme, self.on_close_callback = controller, controller.lang, controller.theme, on_close_callback
         self.title(self.lang.get("tray_notice_title")); self.transient(master); self.configure(fg_color=self.theme['bg'])
         main_x, main_y, main_w, main_h = master.winfo_x(), master.winfo_y(), master.winfo_width(), master.winfo_height(); dialog_w, dialog_h = 400, 150
@@ -148,4 +148,6 @@ class TrayNotificationDialog(ctk.CTkToplevel):
         ctk.CTkLabel(self, text=self.lang.get("tray_notice_text"), wraplength=380, font=self.controller.font_main, text_color=self.theme['text']).pack(pady=20, padx=20)
         button = ctk.CTkButton(self, text=self.lang.get("tray_notice_button"), command=self._close_dialog, fg_color=self.theme['accent'], text_color=self.theme['text_on_accent'], hover_color=self.theme['accent_hover']); button.pack(pady=10)
         self.protocol("WM_DELETE_WINDOW", self._close_dialog)
+        self.after(100, self.lift) # Traer al frente
+        self.after(100, self.focus_force) # Forzar foco
     def _close_dialog(self): self.controller.config["tray_notification_shown"] = True; self.controller.save_settings(); self.destroy(); self.on_close_callback()
