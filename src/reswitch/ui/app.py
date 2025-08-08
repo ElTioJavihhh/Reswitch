@@ -9,7 +9,7 @@ import json
 import os
 import sys
 import winreg as reg
-from PIL import Image, ImageTk
+from PIL import Image
 import webbrowser
 import pystray
 import logging
@@ -43,13 +43,8 @@ class ResolutionSwitcherApp(ctk.CTk):
         self.engine = GameScannerEngine()
         self.theme = THEMES["Light"]
         self.icon_path = helpers.resource_path("reswitch_icon.ico")
-        
-        # --- CORRECCIÓN: Carga el icono una sola vez y lo guarda como un objeto ---
-        if os.path.exists(self.icon_path):
-            self.app_icon = ImageTk.PhotoImage(Image.open(self.icon_path))
-        else:
-            self.app_icon = None
-        
+        self.app_icon = self.icon_path # --- CORRECCIÓN: Ahora simplemente pasamos la ruta ---
+
         self.font_main = ctk.CTkFont(family="Segoe UI", size=14)
         self.font_bold = ctk.CTkFont(family="Segoe UI", size=16, weight="bold")
         self.font_title = ctk.CTkFont(family="Segoe UI", size=32, weight="bold")
