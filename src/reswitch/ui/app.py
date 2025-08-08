@@ -60,11 +60,16 @@ class ResolutionSwitcherApp(ctk.CTk):
         self.show_frame("home"); logger.info("Aplicación inicializada correctamente.")
 
     def set_window_icon(self):
+        logger.debug(f"Attempting to set main window icon with path: '{self.icon_path}'")
         try:
             if os.path.exists(self.icon_path):
+                logger.debug("Icon path exists. Calling self.iconbitmap().")
                 self.iconbitmap(self.icon_path)
+                logger.debug("Main window icon set successfully.")
+            else:
+                logger.warning(f"Icon path '{self.icon_path}' does not exist. Cannot set main window icon.")
         except Exception as e:
-            logger.error(f"Error al establecer el icono de la ventana: {e}")
+            logger.error(f"Error setting main window icon: {e}", exc_info=True)
 
     def load_settings(self):
         os.makedirs(APP_DATA_DIR, exist_ok=True)
@@ -314,26 +319,72 @@ class ResolutionSwitcherApp(ctk.CTk):
         if hasattr(widgets, 'GameScannerWindow'): scanner = widgets.GameScannerWindow(master=self, controller=self); scanner.grab_set()
 
     def _show_tray_notification_dialog(self, on_close_callback):
-        if hasattr(widgets, 'TrayNotificationDialog'): dialog = widgets.TrayNotificationDialog(master=self, controller=self, on_close_callback=on_close_callback); dialog.grab_set()
+        logger.debug("Showing tray notification dialog.")
+        if hasattr(widgets, 'TrayNotificationDialog'):
+            dialog = widgets.TrayNotificationDialog(master=self, controller=self, on_close_callback=on_close_callback)
+            dialog.grab_set()
+        else:
+            logger.error("TrayNotificationDialog widget not found!")
 
     def setup_tray_icon(self):
+        logger.debug("Setting up pystray icon.")
         icon_image = Image.open(self.icon_path) if os.path.exists(self.icon_path) else None
-        menu = (pystray.MenuItem(lambda: self.lang.get("tray_show"), self.show_window, default=True), pystray.MenuItem(lambda: self.lang.get("tray_desktop_mode"), lambda: self.set_resolution(self.config.get("desktop_res"))), pystray.MenuItem(lambda: self.lang.get("tray_game_mode"), lambda: self.set_resolution(self.config.get("game_res"))), pystray.Menu.SEPARATOR, pystray.MenuItem(lambda: self.lang.get("tray_exit"), self.quit_app))
-        self.tray_icon = pystray.Icon(APP_NAME, icon_image, APP_NAME, menu); self.tray_icon.run()
+        if not icon_image:
+            logger.warning("Tray icon image not found. pystray may use a default icon.")
+        menu = (
+            pystray.MenuItem(lambda: self.lang.get("tray_show"), self.show_window, default=True),
+            pystray.MenuItem(lambda: self.lang.get("tray_desktop_mode"), lambda: self.set_resolution(self.config.get("desktop_res"))),
+            pystray.MenuItem(lambda: self.lang.get("tray_game_mode"), lambda: self.set_resolution(self.config.get("game_res"))),
+            pystray.Menu.SEPARATOR,
+            pystray.MenuItem(lambda: self.lang.get("tray_exit"), self.quit_app)
+        )
+        self.tray_icon = pystray.Icon(APP_NAME, icon_image, APP_NAME, menu)
+        logger.debug("pystray icon created. Running tray_icon.run()...")
+        self.tray_icon.run()
+        logger.debug("pystray icon.run() finished.")
 
     def hide_to_tray(self):
+        logger.debug("WM_DELETE_WINDOW triggered. Hiding to tray...")
         def _hide():
+            logger.debug("Executing _hide callback.")
             self.withdraw()
-            if not self.tray_thread or not self.tray_thread.is_alive(): self.tray_thread = threading.Thread(target=self.setup_tray_icon, daemon=True); self.tray_thread.start()
-        if not self.config.get("tray_notification_shown", False): self._show_tray_notification_dialog(on_close_callback=_hide)
-        else: _hide()
+            logger.debug("Window withdrawn.")
+            if not self.tray_thread or not self.tray_thread.is_alive():
+                logger.debug("Tray thread not running. Starting new tray thread.")
+                self.tray_thread = threading.Thread(target=self.setup_tray_icon, daemon=True)
+                self.tray_thread.start()
+            else:
+                logger.debug("Tray thread already running.")
+
+        tray_notification_shown = self.config.get("tray_notification_shown", False)
+        logger.debug(f"Tray notification shown before: {tray_notification_shown}")
+        if not tray_notification_shown:
+            self._show_tray_notification_dialog(on_close_callback=_hide)
+        else:
+            logger.debug("Skipping tray notification, calling _hide directly.")
+            _hide()
 
     def show_window(self):
-        if self.tray_icon: self.tray_icon.stop()
-        self.tray_thread = None; self.after(100, self.deiconify); self.lift(); self.focus_force()
+        logger.debug("show_window called. Stopping tray icon.")
+        if self.tray_icon:
+            self.tray_icon.stop()
+        self.tray_thread = None
+        logger.debug("Restoring window.")
+        self.after(100, self.deiconify)
+        self.lift()
+        self.focus_force()
 
     def quit_app(self):
+        logger.info("quit_app called. Shutting down application.")
         self.stop_thread.set()
-        if self.tray_icon: self.tray_icon.stop()
-        if self.process_checker_thread: self.process_checker_thread.join(timeout=1)
-        self.destroy(); sys.exit(0)
+        logger.debug("Stop event set for process checker thread.")
+        if self.tray_icon:
+            logger.debug("Stopping tray icon.")
+            self.tray_icon.stop()
+        if self.process_checker_thread and self.process_checker_thread.is_alive():
+            logger.debug("Waiting for process checker thread to join.")
+            self.process_checker_thread.join(timeout=1)
+        logger.debug("Destroying main window.")
+        self.destroy()
+        logger.info("Exiting application with sys.exit(0).")
+        sys.exit(0)

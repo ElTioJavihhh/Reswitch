@@ -5,6 +5,9 @@ from typing import Callable, Dict, Any, Optional, List
 import os
 from PIL import Image
 from ..core.models import GameProfile
+import logging
+
+logger = logging.getLogger(__name__)
 
 class NavButton(ctk.CTkButton):
     def __init__(self, master: Any, text_key: str, command: Callable, lang_manager: Any, theme: Dict[str, str]):
@@ -49,12 +52,18 @@ class ProfileEditor(ctk.CTkToplevel):
         title_key = "profile_editor_title_edit" if profile_to_edit else "profile_editor_title_new"
         self.title(self.lang.get(title_key))
         self.geometry("500x350")
-        
-        # --- CORRECCIÓN DEFINITIVA ---
-        if controller.app_icon and os.path.exists(controller.app_icon):
-            self.iconbitmap(controller.app_icon)
-
         self.transient(master)
+
+        try:
+            icon_path = controller.app_icon
+            logger.debug(f"ProfileEditor: Attempting to set icon with path: '{icon_path}'")
+            if icon_path and os.path.exists(icon_path):
+                self.iconbitmap(icon_path)
+                logger.debug("ProfileEditor: Icon set successfully.")
+            else:
+                logger.warning(f"ProfileEditor: Icon path '{icon_path}' does not exist or is None.")
+        except Exception as e:
+            logger.error(f"ProfileEditor: Error setting icon: {e}", exc_info=True)
         self.configure(fg_color=self.theme['bg'])
         self.protocol("WM_DELETE_WINDOW", self.destroy)
         ctk.CTkLabel(self, text=self.lang.get("executable_path_label"), font=self.controller.font_main, text_color=self.theme['text']).pack(padx=20, pady=(15,0), anchor="w")
@@ -93,8 +102,17 @@ class GameScannerWindow(ctk.CTkToplevel):
         self.controller, self.lang, self.theme, self.checkboxes = controller, controller.lang, controller.theme, []
         self.title(self.lang.get("game_scanner_title"))
         self.geometry("600x500")
-        if controller.app_icon and os.path.exists(controller.app_icon): self.iconbitmap(controller.app_icon)
         self.transient(master)
+        try:
+            icon_path = controller.app_icon
+            logger.debug(f"GameScannerWindow: Attempting to set icon with path: '{icon_path}'")
+            if icon_path and os.path.exists(icon_path):
+                self.iconbitmap(icon_path)
+                logger.debug("GameScannerWindow: Icon set successfully.")
+            else:
+                logger.warning(f"GameScannerWindow: Icon path '{icon_path}' does not exist or is None.")
+        except Exception as e:
+            logger.error(f"GameScannerWindow: Error setting icon: {e}", exc_info=True)
         self.configure(fg_color=self.theme['bg'])
         self.status_label = ctk.CTkLabel(self, text=self.lang.get("scanner_status_scanning"), font=self.controller.font_main, text_color=self.theme['text']); self.status_label.pack(pady=20)
         self.scroll_frame = ctk.CTkScrollableFrame(self, fg_color=self.theme['frame_bg']); self.scroll_frame.pack(fill="both", expand=True, padx=20)
@@ -121,9 +139,19 @@ class GameScannerWindow(ctk.CTkToplevel):
 class HotkeyCaptureWindow(ctk.CTkToplevel):
     def __init__(self, master: Any, controller: Any, button_to_update: ctk.CTkButton):
         super().__init__(master)
-        if controller.app_icon and os.path.exists(controller.app_icon): self.iconbitmap(controller.app_icon)
+        self.transient(master)
+        try:
+            icon_path = controller.app_icon
+            logger.debug(f"HotkeyCaptureWindow: Attempting to set icon with path: '{icon_path}'")
+            if icon_path and os.path.exists(icon_path):
+                self.iconbitmap(icon_path)
+                logger.debug("HotkeyCaptureWindow: Icon set successfully.")
+            else:
+                logger.warning(f"HotkeyCaptureWindow: Icon path '{icon_path}' does not exist or is None.")
+        except Exception as e:
+            logger.error(f"HotkeyCaptureWindow: Error setting icon: {e}", exc_info=True)
         self.controller, self.lang, self.theme, self.button_to_update, self.keys_pressed = controller, controller.lang, controller.theme, button_to_update, []
-        self.title(self.lang.get("hotkey_capture_title")); self.geometry("300x100"); self.transient(master); self.configure(fg_color=self.theme['bg'])
+        self.title(self.lang.get("hotkey_capture_title")); self.geometry("300x100"); self.configure(fg_color=self.theme['bg'])
         self.label = ctk.CTkLabel(self, text=self.lang.get("hotkey_capture_text"), font=self.controller.font_main, text_color=self.theme['text']); self.label.pack(expand=True)
         import keyboard; self.keyboard = keyboard
         self.hook = self.keyboard.on_press(self._on_key_press, suppress=True)
@@ -140,14 +168,34 @@ class HotkeyCaptureWindow(ctk.CTkToplevel):
 class TrayNotificationDialog(ctk.CTkToplevel):
     def __init__(self, master: Any, controller: Any, on_close_callback: Callable):
         super().__init__(master)
-        if controller.app_icon and os.path.exists(controller.app_icon): self.iconbitmap(controller.app_icon)
+        logger.debug("TrayNotificationDialog: Initializing.")
+        self.transient(master)
+        try:
+            icon_path = controller.app_icon
+            logger.debug(f"TrayNotificationDialog: Attempting to set icon with path: '{icon_path}'")
+            if icon_path and os.path.exists(icon_path):
+                self.iconbitmap(icon_path)
+                logger.debug("TrayNotificationDialog: Icon set successfully.")
+            else:
+                logger.warning(f"TrayNotificationDialog: Icon path '{icon_path}' does not exist or is None.")
+        except Exception as e:
+            logger.error(f"TrayNotificationDialog: Error setting icon: {e}", exc_info=True)
         self.controller, self.lang, self.theme, self.on_close_callback = controller, controller.lang, controller.theme, on_close_callback
-        self.title(self.lang.get("tray_notice_title")); self.transient(master); self.configure(fg_color=self.theme['bg'])
+        self.title(self.lang.get("tray_notice_title")); self.configure(fg_color=self.theme['bg'])
         main_x, main_y, main_w, main_h = master.winfo_x(), master.winfo_y(), master.winfo_width(), master.winfo_height(); dialog_w, dialog_h = 400, 150
         self.geometry(f"{dialog_w}x{dialog_h}+{main_x + (main_w - dialog_w) // 2}+{main_y + (main_h - dialog_h) // 2}")
         ctk.CTkLabel(self, text=self.lang.get("tray_notice_text"), wraplength=380, font=self.controller.font_main, text_color=self.theme['text']).pack(pady=20, padx=20)
         button = ctk.CTkButton(self, text=self.lang.get("tray_notice_button"), command=self._close_dialog, fg_color=self.theme['accent'], text_color=self.theme['text_on_accent'], hover_color=self.theme['accent_hover']); button.pack(pady=10)
         self.protocol("WM_DELETE_WINDOW", self._close_dialog)
+        logger.debug("TrayNotificationDialog: Forcing focus and lift.")
         self.after(100, self.lift) # Traer al frente
         self.after(100, self.focus_force) # Forzar foco
-    def _close_dialog(self): self.controller.config["tray_notification_shown"] = True; self.controller.save_settings(); self.destroy(); self.on_close_callback()
+        logger.debug("TrayNotificationDialog: Initialization complete.")
+    def _close_dialog(self):
+        logger.debug("TrayNotificationDialog: Closing dialog.")
+        self.controller.config["tray_notification_shown"] = True
+        logger.debug("Set tray_notification_shown to True.")
+        self.controller.save_settings()
+        self.destroy()
+        logger.debug("Dialog destroyed. Calling hide callback.")
+        self.on_close_callback()
