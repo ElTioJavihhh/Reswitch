@@ -9,21 +9,27 @@ import winshell
 import logging
 from io import BytesIO
 
+logger = logging.getLogger(__name__)
+
 def resource_path(relative_path: str) -> str:
     """
     Obtiene la ruta absoluta a un recurso. Esta es la versión definitiva y robusta.
     """
     try:
-        # Ruta cuando está empaquetado con PyInstaller
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
+        logger.debug(f"Running in PyInstaller bundle, _MEIPASS: {base_path}")
     except AttributeError:
-        # Ruta en desarrollo (la raíz del proyecto)
+        # Not in a PyInstaller bundle
         base_path = os.path.abspath(".")
-        # La carpeta de assets está dentro de 'src' en desarrollo
-        return os.path.join(base_path, 'src', 'assets', relative_path)
-    
-    # En producción, PyInstaller pone los assets en una carpeta al lado del exe
-    return os.path.join(base_path, 'assets', relative_path)
+        logger.debug(f"Running in development, base_path: {base_path}")
+        final_path = os.path.join(base_path, 'src', 'assets', relative_path)
+        logger.debug(f"Resource path in dev: {final_path}")
+        return final_path
+
+    final_path = os.path.join(base_path, 'assets', relative_path)
+    logger.debug(f"Resource path in bundle: {final_path}")
+    return final_path
 
 def calculate_aspect_ratio(width: int, height: int) -> str:
     if width == 0 or height == 0: return ""
@@ -38,20 +44,24 @@ def set_dpi_awareness():
         except AttributeError: pass
 
 def get_icon_from_exe(exe_path: str, size: Tuple[int, int] = (32, 32)) -> ctk.CTkImage:
+    logger.debug(f"Attempting to get icon for exe: '{exe_path}'")
     if not exe_path or not os.path.exists(exe_path):
+        logger.warning(f"Exe path does not exist or is empty: '{exe_path}'. Returning placeholder.")
         return create_placeholder_icon(size=size)
     try:
         ico_data = winshell.get_icon(exe_path, winshell.IconSize.large)
         
         if not ico_data:
+            logger.warning(f"winshell.get_icon returned no data for '{exe_path}'. Returning placeholder.")
             return create_placeholder_icon(size=size)
 
+        logger.debug(f"Successfully got icon data for '{exe_path}'. Creating CTkImage.")
         with BytesIO(ico_data) as bio:
             img = Image.open(bio)
             return ctk.CTkImage(light_image=img, dark_image=img, size=size)
 
     except Exception as e:
-        logging.error(f"Error extracting icon from {exe_path}: {e}")
+        logger.error(f"Error extracting icon from '{exe_path}': {e}", exc_info=True)
         return create_placeholder_icon(size=size)
 
 def create_placeholder_icon(size: Tuple[int, int] = (32, 32)) -> ctk.CTkImage:
